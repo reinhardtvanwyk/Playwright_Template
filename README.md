@@ -156,22 +156,87 @@ Debugs and fixes failing tests.
 
 Test credentials are stored in AWS SSM Parameter Store as `SecureString` values and retrieved at runtime. No passwords are committed to the repository.
 
+### How AWS SSM Parameter Store Works
+
+AWS Systems Manager (SSM) Parameter Store is a secure, managed key-value store. This project uses it as a secrets vault for test user credentials:
+
+- Parameters are stored as **SecureString**, which means AWS encrypts the value at rest using a KMS key. The value is only decrypted at retrieval time by callers with the right IAM permissions.
+- The project calls `GetParameter` with `WithDecryption: true` — AWS decrypts the value server-side and returns it in plaintext over TLS. The decrypted value is never stored on disk or in any cache.
+- Access is controlled entirely by IAM: the AWS identity running the tests (a CI role or developer credentials) must have `ssm:GetParameter` permission on the relevant paths and `kms:Decrypt` on the associated KMS key.
+
+### Storing Parameters
+
+Use the AWS CLI to create or update a parameter. Always use `SecureString` for credentials:
+
+```sh
+# Create a new SecureString parameter (uses the AWS-managed KMS key by default)
+aws ssm put-parameter \
+  --name "/playwright/staging/adolescent/username" \
+  --value "teen@example.com" \
+  --type SecureString \
+  --region us-east-1
+
+aws ssm put-parameter \
+  --name "/playwright/staging/adolescent/password" \
+  --value "s3cur3P@ss!" \
+  --type SecureString \
+  --region us-east-1
+
+# Update an existing parameter (add --overwrite)
+aws ssm put-parameter \
+  --name "/playwright/staging/adolescent/password" \
+  --value "newP@ss!" \
+  --type SecureString \
+  --overwrite \
+  --region us-east-1
+```
+
+To use a custom KMS key instead of the AWS-managed default, add `--key-id alias/your-key-alias`.
+
 ### SSM Parameter Structure
+
+All parameters follow this path convention:
 
 ```
 /playwright/{TEST_ENV}/{userIdentifier}/username
 /playwright/{TEST_ENV}/{userIdentifier}/password
 ```
 
-| Variable | Default | Purpose |
+| Segment | Source | Example |
 |---|---|---|
-| `TEST_ENV` | `dev` | Environment segment in the SSM path |
-| `AWS_REGION` | `us-east-1` | Region where parameters are stored |
+| `TEST_ENV` | `TEST_ENV` env var (default: `dev`) | `dev`, `staging`, `prod` |
+| `userIdentifier` | Requested by the test fixture | `admin`, `readonly`, `adolescent` |
 
 **Example paths for user `adolescent` in staging:**
 ```
 /playwright/staging/adolescent/username
 /playwright/staging/adolescent/password
+```
+
+Each time a test fixture requests credentials, `GetParameter` is called fresh — values are never cached, so rotation takes effect immediately without restarting the test runner.
+
+### Required IAM Permissions
+
+The AWS identity running the tests needs at minimum:
+
+```json
+{
+  "Effect": "Allow",
+  "Action": [
+    "ssm:GetParameter"
+  ],
+  "Resource": "arn:aws:ssm:{region}:{account-id}:parameter/playwright/*"
+}
+```
+
+If using a custom KMS key, also add:
+
+```json
+{
+  "Effect": "Allow",
+  "Action": "kms:Decrypt",
+  "Resource": "arn:aws:kms:{region}:{account-id}:key/{key-id}"
+}
 ```
 
 ### Using Credentials in Tests

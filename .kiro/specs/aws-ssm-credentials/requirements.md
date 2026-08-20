@@ -24,7 +24,6 @@ Tests must be able to retrieve a named set of credentials (username + password) 
 **Acceptance criteria:**
 - Given a user identifier, the system returns `{ username: string, password: string }`
 - Each user maps to a pair of SSM parameters following a consistent naming convention (see Design)
-- Credentials are retrieved once per test session and cached to avoid redundant SSM calls
 - A meaningful error is thrown if a requested user identifier does not exist in SSM
 
 ---

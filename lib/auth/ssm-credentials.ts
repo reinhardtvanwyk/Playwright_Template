@@ -5,8 +5,6 @@ export interface Credentials {
   password: string;
 }
 
-const cache = new Map<string, Credentials>();
-
 const client = new SSMClient({
   region: process.env.AWS_REGION ?? 'us-east-1',
 });
@@ -27,19 +25,13 @@ export async function getCredentials(userIdentifier: string): Promise<Credential
   }
 
   const env = process.env.TEST_ENV ?? 'dev';
-  const cacheKey = `${env}/${userIdentifier}`;
-
-  if (cache.has(cacheKey)) return cache.get(cacheKey)!;
-
   const base = `/playwright/${env}/${userIdentifier}`;
   try {
     const [username, password] = await Promise.all([
       fetchParameter(`${base}/username`),
       fetchParameter(`${base}/password`),
     ]);
-    const credentials = { username, password };
-    cache.set(cacheKey, credentials);
-    return credentials;
+    return { username, password };
   } catch (err) {
     throw new Error(
       `Failed to retrieve credentials for user "${userIdentifier}" from SSM (env: ${env}). ` +

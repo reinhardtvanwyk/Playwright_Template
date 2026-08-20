@@ -35,16 +35,12 @@ Is TEST_USERNAME + TEST_PASSWORD set?
   Yes → return { username: TEST_USERNAME, password: TEST_PASSWORD }
   No  ↓
        ▼
-Is "adolescent" in session cache?
-  Yes → return cached credentials
-  No  ↓
-       ▼
 Fetch from SSM:
   GET /playwright/{TEST_ENV}/adolescent/username
   GET /playwright/{TEST_ENV}/adolescent/password
        │
        ▼
-Cache result → return { username, password }
+Return { username, password }
 ```
 
 ---
@@ -72,7 +68,6 @@ getCredentials(userIdentifier: string): Promise<{ username: string; password: st
 ```
 
 - Uses `@aws-sdk/client-ssm` (`GetParameter` with `WithDecryption: true`)
-- Session-scoped in-memory cache keyed by `{environment}/{userIdentifier}`
 - Env-var bypass: if `TEST_USERNAME` is set, returns those values regardless of identifier
 
 ---
