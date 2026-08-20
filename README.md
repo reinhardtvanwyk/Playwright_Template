@@ -60,16 +60,16 @@ All tests use relative paths (e.g. `page.goto('/')`) and inherit the base URL au
 
 ### Option 1 — Human-authored flows (recommended)
 
-Create a `.flow.md` file in `.kiro/flows/` describing the user journey in plain language. The file name and folder structure determine the output test file path.
+Create a `.flow.md` file in `flows/` describing the user journey in plain language. The file name and folder structure determine the output test file path.
 
 **Naming convention:**
 
 | Flow file | Generated test file |
 |-----------|-------------------|
-| `.kiro/flows/homepage.flow.md` | `tests/homepage.spec.ts` |
-| `.kiro/flows/checkout/adolescent.flow.md` | `tests/checkout/adolescent.spec.ts` |
+| `flows/homepage.flow.md` | `tests/homepage.spec.ts` |
+| `flows/checkout/adolescent.flow.md` | `tests/checkout/adolescent.spec.ts` |
 
-The rule: replace the `.kiro/flows/` prefix with `tests/` and swap `.flow.md` for `.spec.ts`, preserving all subdirectories.
+The rule: replace the `flows/` prefix with `tests/` and swap `.flow.md` for `.spec.ts`, preserving all subdirectories.
 
 **Flow file format** — write plain steps and expectations:
 
@@ -112,7 +112,7 @@ Explores the live application and produces a comprehensive test plan in `specs/`
 
 **What it does:**
 1. Reads `playwright.config.ts` to resolve the base URL — prompts you if none is configured.
-2. Reads all `.kiro/flows/*.flow.md` files to understand intended user journeys.
+2. Reads all `flows/*.flow.md` files to understand intended user journeys.
 3. Navigates the live application and maps interactive elements and user paths.
 4. Saves a structured plan to `specs/` using `planner_save_plan`.
 
@@ -125,10 +125,10 @@ Converts a flow file or plan into a runnable `.spec.ts` test.
 **When to use:** You have a `.flow.md` file or a plan in `specs/` and want to generate the corresponding Playwright test.
 
 **How to invoke:**
-> "Generate tests from .kiro/flows/checkout/adolescent.flow.md"
+> "Generate tests from flows/checkout/adolescent.flow.md"
 
 **What it does:**
-1. Reads the flow from `.kiro/flows/` (or falls back to `specs/` if no flow file exists).
+1. Reads the flow from `flows/` (or falls back to `specs/` if no flow file exists).
 2. Sets up a live browser session and executes each step interactively.
 3. Reads the recorded interaction log.
 4. Writes the test file to `tests/{path}.spec.ts`, mirroring the flow file's path.
@@ -145,7 +145,7 @@ Debugs and fixes failing tests.
 > "Fix the failing tests"
 
 **What it does:**
-1. Reads the corresponding `.kiro/flows/` file to understand the original intent.
+1. Reads the corresponding `flows/` file to understand the original intent.
 2. Runs all tests and identifies failures.
 3. Debugs each failure — inspects selectors, timing, and assertions against the live application.
 4. Edits the test file to fix the root cause and reruns until all tests pass.

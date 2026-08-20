@@ -25,7 +25,7 @@
 - Never commit directly to `main`, `master`, or `develop`
 - Use conventional commits: `<type>(<scope>): <summary>` — max 72 chars
 - Types: `feat`, `fix`, `chore`, `docs`, `test`, `refactor`, `style`
-- Use the `commit-and-push` agent to handle branch checkout and commit safely
+- Use the `/commit-and-push` skill to handle branch checkout and commit safely
 
 ## Configuration
 
