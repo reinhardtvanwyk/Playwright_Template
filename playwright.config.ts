@@ -2,6 +2,9 @@ import { defineConfig, devices } from '@playwright/test';
 
 // Base URL for the application under test — override via BASE_URL env var
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
+// AWS_REGION  — SSM region (default: us-east-1)
+// TEST_ENV    — SSM path segment: /playwright/{TEST_ENV}/{user}/username|password (default: dev)
+// TEST_USERNAME / TEST_PASSWORD — bypass SSM for local development
 
 export default defineConfig({
   testDir: './tests',

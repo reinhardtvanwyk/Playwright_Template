@@ -152,6 +152,70 @@ Debugs and fixes failing tests.
 
 ---
 
+## Authentication
+
+Test credentials are stored in AWS SSM Parameter Store as `SecureString` values and retrieved at runtime. No passwords are committed to the repository.
+
+### SSM Parameter Structure
+
+```
+/playwright/{TEST_ENV}/{userIdentifier}/username
+/playwright/{TEST_ENV}/{userIdentifier}/password
+```
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `TEST_ENV` | `dev` | Environment segment in the SSM path |
+| `AWS_REGION` | `us-east-1` | Region where parameters are stored |
+
+**Example paths for user `adolescent` in staging:**
+```
+/playwright/staging/adolescent/username
+/playwright/staging/adolescent/password
+```
+
+### Using Credentials in Tests
+
+Import `test` from `lib/auth/fixtures` instead of `@playwright/test`:
+
+```ts
+import { test, expect } from '../lib/auth/fixtures';
+
+test('adolescent user sees dashboard', async ({ authenticatedPage }) => {
+  const page = await authenticatedPage('adolescent');
+  await expect(page).toHaveURL(/dashboard/);
+});
+
+test('read raw credentials', async ({ credentials }) => {
+  const { username } = await credentials('admin');
+  // username is the value from SSM
+});
+```
+
+### Local Development (No AWS Required)
+
+Copy `.env.example` to `.env` and set the bypass variables:
+
+```sh
+cp .env.example .env
+# then edit .env:
+TEST_USERNAME=localuser@example.com
+TEST_PASSWORD=localpassword
+```
+
+When both are set, SSM is skipped entirely.
+
+### CI Setup (GitHub Actions)
+
+Add the following to your repository:
+
+- **Secrets**: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
+- **Variables**: `AWS_REGION`, `TEST_ENV`, `BASE_URL`
+
+The workflow reads these automatically — no changes to `playwright.yml` needed.
+
+---
+
 ## Running Tests
 
 ```sh
